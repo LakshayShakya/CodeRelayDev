@@ -66,7 +66,7 @@ const AuthPage = () => {
             </>
           ) : (
             <>
-              <SignupForm />
+              <SignupForm onSuccess={() => setIsLogin(true)} />
               <p className="mt-6 text-center text-sm text-gray-600">
                 Already have an account?{" "}
                 <button

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock } from "lucide-react";
+import { authService } from "../../services/auth.service";
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -25,17 +26,27 @@ const LoginForm = () => {
     setLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      console.log("Login attempt:", formData);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // For now, just navigate (will be replaced with actual auth)
-      // navigate('/dashboard');
-      setError("API endpoint not implemented yet");
-    } catch (err) {
-      setError("Invalid email or password");
+      const response = await authService.login(formData);
+      
+      // Store token and user data
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      // Navigate to dashboard
+      navigate('/dashboard');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      let errorMessage = 'Invalid email or password';
+      
+      if (err.code === 'ECONNREFUSED' || err.message?.includes('Network Error')) {
+        errorMessage = 'Cannot connect to server. Make sure the backend is running on port 5000.';
+      } else if (err.response?.data?.error?.message) {
+        errorMessage = err.response.data.error.message;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }

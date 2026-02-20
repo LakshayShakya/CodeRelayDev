@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 
 interface Project {
   id: number;
@@ -12,7 +14,14 @@ interface DashboardStyles {
 }
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const [activeNav, setActiveNav] = useState<string>('HOME');
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/auth');
+  };
 
   const navItems: string[] = ['HOME', 'MY REPO', 'NOTIFICATIONS'];
 
@@ -214,6 +223,30 @@ const Dashboard: React.FC = () => {
         <div style={styles.headerNav}>
           <a style={styles.headerLink}>PEOPLE</a>
           <a style={styles.headerLink}>SETTINGS</a>
+          <button
+            onClick={handleLogout}
+            style={{
+              ...styles.headerLink,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.3)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)';
+            }}
+          >
+            <LogOut size={16} />
+            LOGOUT
+          </button>
           <div style={styles.profileIcon}></div>
         </div>
       </header>

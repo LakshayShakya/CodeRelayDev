@@ -6,6 +6,9 @@ import { notFound } from './middleware/notFound';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
+import projectRoutes from './routes/project.routes';
+import pullRequestRoutes from './routes/pullRequest.routes';
+import notificationRoutes from './routes/notification.routes';
 
 const app: Application = express();
 
@@ -32,6 +35,9 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/pull-requests', pullRequestRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 404 handler
 app.use(notFound);

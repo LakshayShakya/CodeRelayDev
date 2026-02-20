@@ -1,18 +1,22 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { Mail, Lock, User } from "lucide-react";
+import { authService } from "../../services/auth.service";
 
-const SignupForm = () => {
+interface SignupFormProps {
+  onSuccess?: () => void;
+}
+
+const SignupForm = ({ onSuccess }: SignupFormProps) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "developer", // 'developer' or 'reviewer'
+    role: "developer" as "developer" | "reviewer", // 'developer' or 'reviewer'
   });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -42,20 +46,44 @@ const SignupForm = () => {
     setLoading(true);
 
     try {
-      // TODO: Replace with actual API call
-      console.log("Signup attempt:", {
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
+      const { confirmPassword, ...registerData } = formData;
+      await authService.register(registerData);
+      
+      // Show success message
+      setSuccess(true);
+      setError("");
+      
+      // Clear form
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        role: "developer",
       });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // For now, just show message (will be replaced with actual auth)
-      setError("API endpoint not implemented yet");
-    } catch (err) {
-      setError("Failed to create account. Please try again.");
+      
+      // Switch to login form after a short delay
+      setTimeout(() => {
+        setSuccess(false);
+        if (onSuccess) {
+          onSuccess();
+        }
+      }, 2000);
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      let errorMessage = 'Failed to create account. Please try again.';
+      
+      if (err.code === 'ECONNREFUSED' || err.message?.includes('Network Error')) {
+        errorMessage = 'Cannot connect to server. Make sure the backend is running on port 5000.';
+      } else if (err.response?.data?.error?.message) {
+        errorMessage = err.response.data.error.message;
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -63,6 +91,11 @@ const SignupForm = () => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {success && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
+          Account created successfully! Redirecting to sign in...
+        </div>
+      )}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
           {error}
